@@ -28,7 +28,15 @@ describe 'Jetons', ->
 			jetons.joinGame testgame, testplayer1, 'player1', (success) ->
 			jetons.joinGame testgame, testplayer2, 'player2', (success) ->
 			jetons.startGame testgame, (success) ->
+				success.should.equal true
 			done()
+
+	it 'should not allow creating a game with an id already in use', (done) ->
+		jetons.createGame testgame, 50, (success1, game) ->
+			success1.should.equal true
+		jetons.createGame testgame, 50, (success2, game) ->
+			success2.should.equal false
+		done()
 
 	it 'should not allow users to join a started game', (done) -> 
 		jetons.createGame testgame, 50, (success, game) ->
