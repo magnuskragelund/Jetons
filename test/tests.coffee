@@ -1,3 +1,4 @@
+should = require('should')
 jetons = require( '../lib/jetons')
 testgame = 'test-game-id'
 testplayer1 = 'test-game-player-1'
@@ -12,54 +13,54 @@ describe 'Jetons', ->
 	it 'should exist', -> jetons.exist
 
 	it 'should be able to create a game', (done) ->
-		jetons.createGame testgame, 50, (success, game) ->
-			success.should.equal true,
+		jetons.createGame testgame, 50, (err, game) ->
+			should.not.exist err
 			game.initialCredits.should.equal 50
 			done()
 
 	it 'should allow players to join a game', (done) ->
-		jetons.createGame testgame, 50, (success, game) ->
-			jetons.joinGame testgame, testplayer1, 'my-nick', (success) ->
-				success.should.equal true
+		jetons.createGame testgame, 50, (err, game) ->
+			jetons.joinGame testgame, testplayer1, 'my-nick', (err) ->
+				should.not.exist err
 			done()
 
 	it 'should allow a game to start', (done) -> 
-		jetons.createGame testgame, 50, (success, game) ->
-			jetons.joinGame testgame, testplayer1, 'player1', (success) ->
-			jetons.joinGame testgame, testplayer2, 'player2', (success) ->
-			jetons.startGame testgame, (success) ->
-				success.should.equal true
+		jetons.createGame testgame, 50, (err, game) ->
+			jetons.joinGame testgame, testplayer1, 'player1', (err) ->
+			jetons.joinGame testgame, testplayer2, 'player2', (err) ->
+			jetons.startGame testgame, (err) ->
+				should.not.exist err
 			done()
 
 	it 'should not allow creating a game with an id already in use', (done) ->
-		jetons.createGame testgame, 50, (success1, game) ->
-			success1.should.equal true
-		jetons.createGame testgame, 50, (success2, game) ->
-			success2.should.equal false
+		jetons.createGame testgame, 50, (err, game) ->
+			should.not.exist err
+		jetons.createGame testgame, 50, (err, game) ->
+			should.exist err
 		done()
 
 	it 'should not allow users to join a started game', (done) -> 
-		jetons.createGame testgame, 50, (success, game) ->
-		jetons.joinGame testgame, testplayer1, 'player1', (success) ->
-		jetons.joinGame testgame, testplayer2, 'player2', (success) ->
-		jetons.startGame testgame, (success) ->
-		jetons.joinGame testgame, testplayer3, 'player3', (success, data) ->
-			success.should.equal false
-			data.message.should.equal 'game already started'
+		jetons.createGame testgame, 50, (err, game) ->
+		jetons.joinGame testgame, testplayer1, 'player1', (err) ->
+		jetons.joinGame testgame, testplayer2, 'player2', (err) ->
+		jetons.startGame testgame, (err) ->
+		jetons.joinGame testgame, testplayer3, 'player3', (err, data) ->
+			should.exist err
+			err.message.should.equal 'game already started'
 		done()
 
 	it 'should not allow two users to use the same nick', (done) -> 
 		jetons.getGame testgame, (game) ->
-		jetons.createGame testgame, 50, (success, game) ->
-		jetons.joinGame testgame, testplayer1, 'duped nick', (success) ->
-		jetons.joinGame testgame, testplayer2, 'duped nick', (success, data) ->
-			success.should.equal false
-			data.message.should.equal 'nickname is already taken'
+		jetons.createGame testgame, 50, (err, game) ->
+		jetons.joinGame testgame, testplayer1, 'duped nick', (err) ->
+		jetons.joinGame testgame, testplayer2, 'duped nick', (err, data) ->
+			should.exist err
+			err.message.should.equal 'nickname is already taken'
 		done()
 
 
 	it 'must not start a game before more than one players has joined', (done) ->
-			jetons.createGame testgame, 50, (success, game) ->
-			jetons.startGame testgame, (success) ->
-				success.should.equal false
+			jetons.createGame testgame, 50, (err, game) ->
+			jetons.startGame testgame, (err) ->
+				should.exist err
 			done()
