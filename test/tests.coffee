@@ -5,6 +5,10 @@ testplayer2 = 'test-game-player-2'
 testplayer3 = 'test-game-player-3'
 
 describe 'Jetons', ->
+
+	beforeEach ->
+		jetons.flushGames()
+
 	it 'should exist', -> jetons.exist
 
 	it 'should be able to create a game', (done) ->
@@ -27,16 +31,24 @@ describe 'Jetons', ->
 			done()
 
 	it 'should not allow users to join a started game', (done) -> 
-			jetons.createGame testgame, 50, (success, game) ->
-			jetons.joinGame testgame, testplayer1, 'player1', (success) ->
-			jetons.joinGame testgame, testplayer2, 'player2', (success) ->
-			jetons.startGame testgame, (success) ->
-			jetons.joinGame testgame, testplayer3, 'player3', (success, data) ->
-				success.should.equal false
-				data.message.should.equal 'game already started'
-			done()
-	
-	it 'should not allow two users to use the same nick', -> false
+		jetons.createGame testgame, 50, (success, game) ->
+		jetons.joinGame testgame, testplayer1, 'player1', (success) ->
+		jetons.joinGame testgame, testplayer2, 'player2', (success) ->
+		jetons.startGame testgame, (success) ->
+		jetons.joinGame testgame, testplayer3, 'player3', (success, data) ->
+			success.should.equal false
+			data.message.should.equal 'game already started'
+		done()
+
+	it 'should not allow two users to use the same nick', (done) -> 
+		jetons.getGame testgame, (game) ->
+		jetons.createGame testgame, 50, (success, game) ->
+		jetons.joinGame testgame, testplayer1, 'duped nick', (success) ->
+		jetons.joinGame testgame, testplayer2, 'duped nick', (success, data) ->
+			success.should.equal false
+			data.message.should.equal 'nickname is already taken'
+		done()
+
 
 	it 'must not start a game before more than one players has joined', (done) ->
 			jetons.createGame testgame, 50, (success, game) ->
