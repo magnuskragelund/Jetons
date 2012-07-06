@@ -53,14 +53,25 @@ describe 'Jetons', ->
 		jetons.getGame testgame, (game) ->
 		jetons.createGame testgame, 50, (err, game) ->
 		jetons.joinGame testgame, testplayer1, 'duped nick', (err) ->
-		jetons.joinGame testgame, testplayer2, 'duped nick', (err, data) ->
+		jetons.joinGame testgame, testplayer2, 'duped nick', (err) ->
 			should.exist err
 			err.message.should.equal 'nickname is already taken'
 		done()
 
 
 	it 'must not start a game before more than one players has joined', (done) ->
-			jetons.createGame testgame, 50, (err, game) ->
-			jetons.startGame testgame, (err) ->
-				should.exist err
-			done()
+		jetons.createGame testgame, 50, (err, game) ->
+		jetons.startGame testgame, (err) ->
+			should.exist err
+		done()
+
+	it 'should let players bet', (done) ->
+		_game = null
+		jetons.createGame testgame, 50, (err, game) ->
+			_game = game
+			jetons.joinGame testgame, testplayer1, 'nick1', (err) ->
+				jetons.joinGame testgame, testplayer2, 'nick2', (err) ->
+					jetons.startGame testgame, (err) ->
+						jetons.bet testgame, testplayer1, 10, (err) ->
+							game.pot.should.equal 10
+							done()
