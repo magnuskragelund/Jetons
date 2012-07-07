@@ -25,11 +25,8 @@ describe 'Jetons', ->
 			done()
 
 	it 'should allow a game to start', (done) -> 
-		jetons.createGame testgame, 50, (err, game) ->
-			jetons.joinGame testgame, testplayer1, 'player1', (err) ->
-			jetons.joinGame testgame, testplayer2, 'player2', (err) ->
-			jetons.startGame testgame, (err) ->
-				should.not.exist err
+		createStartedGame testgame, (game) ->
+			should.exist game
 			done()
 
 	it 'should not allow creating a game with an id already in use', (done) ->
@@ -40,23 +37,19 @@ describe 'Jetons', ->
 		done()
 
 	it 'should not allow users to join a started game', (done) -> 
-		jetons.createGame testgame, 50, (err, game) ->
-		jetons.joinGame testgame, testplayer1, 'player1', (err) ->
-		jetons.joinGame testgame, testplayer2, 'player2', (err) ->
-		jetons.startGame testgame, (err) ->
-		jetons.joinGame testgame, testplayer3, 'player3', (err, data) ->
-			should.exist err
-			err.message.should.equal 'game already started'
-		done()
+		createStartedGame testgame, (game) ->
+			jetons.joinGame testgame, testplayer3, 'player3', (err, data) ->
+				should.exist err
+				err.message.should.equal 'game already started'
+				done()
 
 	it 'should not allow two users to use the same nick', (done) -> 
-		jetons.getGame testgame, (game) ->
 		jetons.createGame testgame, 50, (err, game) ->
-		jetons.joinGame testgame, testplayer1, 'duped nick', (err) ->
-		jetons.joinGame testgame, testplayer2, 'duped nick', (err) ->
-			should.exist err
-			err.message.should.equal 'nickname is already taken'
-		done()
+			jetons.joinGame testgame, testplayer1, 'duped nick', (err) ->
+				jetons.joinGame testgame, testplayer2, 'duped nick', (err) ->
+					should.exist err
+					err.message.should.equal 'nickname is already taken'
+					done()
 
 
 	it 'must not start a game before more than one players has joined', (done) ->
@@ -66,12 +59,16 @@ describe 'Jetons', ->
 		done()
 
 	it 'should let players bet', (done) ->
-		_game = null
-		jetons.createGame testgame, 50, (err, game) ->
-			_game = game
-			jetons.joinGame testgame, testplayer1, 'nick1', (err) ->
-				jetons.joinGame testgame, testplayer2, 'nick2', (err) ->
-					jetons.startGame testgame, (err) ->
-						jetons.bet testgame, testplayer1, 10, (err) ->
-							game.pot.should.equal 10
-							done()
+		createStartedGame testgame, (game) ->
+			jetons.bet testgame, testplayer1, 10, (err) ->
+				game.pot.should.equal 10
+				done()
+
+createStartedGame = (gameId, callback) ->
+	_game = null
+	jetons.createGame gameId, 50, (err, game) ->
+		_game = game
+		jetons.joinGame gameId, testplayer1, 'nick1', (err) ->
+			jetons.joinGame gameId, testplayer2, 'nick2', (err) ->
+				jetons.startGame gameId, (err) ->
+					callback(game)
