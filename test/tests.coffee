@@ -51,7 +51,6 @@ describe 'Jetons', ->
 					err.message.should.equal 'nickname is already taken'
 					done()
 
-
 	it 'must not start a game before more than one players has joined', (done) ->
 		jetons.createGame testgame, 50, (err, game) ->
 		jetons.startGame testgame, (err) ->
@@ -62,7 +61,26 @@ describe 'Jetons', ->
 		createStartedGame testgame, (game) ->
 			jetons.bet testgame, testplayer1, 10, (err) ->
 				game.pot.should.equal 10
+
+				for player in game.players
+					if player.id == testplayer1
+						player.credits.should.equal 40
+
 				done()
+
+	it 'should not let players bet more than they have', (done) ->
+		createStartedGame testgame, (game) ->
+			jetons.bet testgame, testplayer1, 60, (err) ->
+				game.pot.should.equal 0
+
+				for player in game.players
+					if player.id == testplayer1
+						player.credits.should.equal 50
+
+				err.should.exist
+				err.message.should.equal 'bet exceeds credits'
+				done()
+
 
 createStartedGame = (gameId, callback) ->
 	_game = null
