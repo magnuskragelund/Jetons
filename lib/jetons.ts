@@ -1,128 +1,134 @@
 ///<reference path='../node.d.ts'/>
-var Jetons = function() {
-		
-	var _games = [];
 
-	var _getPlayer = function (game, playerId) {
-		for(var i = 0; i < game.players.length; i++) {
-			if(game.players[i].id === playerId) return game.players[i];
-		}
-	}
+class Game {
+    id: number;
+    initialCredits: number;
+    players: Player[];
+    started: bool;
+    pot: number;
+}
 
-	var _getGame = function (id, callback) {
-		
-		for(var i = 0; i < _games.length; i++)
-		{
-			if(_games[i].id === id) {
-				return callback(null, _games[i]);
-			}
-		}
+class Player {
+    id: number;
+    name: string;
+    credits: number;
+}
 
-		callback(null, null);
-	};	
+export class Server {
 
-	var _createGame = function (id, initialCredits, callback) {
+    private games: Game[];
 
-		var existingGame;
-		
-		_getGame(id, function(err, game){
-			
-			if(err)
-				return callback(err);
+    constructor () {
+        this.games = new Array();
+    }
 
-			existingGame = game;
-		});
-		
-		if(existingGame){
-			return callback(new Error('A game with that id already exists'));
-		}
-		
-		var game = {
-			id: id,
-			initialCredits: initialCredits,
-			players: [],
-			started: false,
-			pot: 0
-		};
+    public getPlayer(game: Game, playerId: number) {
+        for (var i = 0; i < game.players.length; i++) {
+            if (game.players[i].id === playerId) return game.players[i];
+        }
+    }
 
-		_games.push(game);
+    public getGame(id, callback) {
 
-		callback(null, game);
-	};
+        for (var i = 0; i < this.games.length; i++) {
+            if (this.games[i].id === id) {
+                return callback(null, this.games[i]);
+            }
+        }
 
-	var _flushGames = function() {
-		_games = [];
-	}
+        callback(null, null);
+    };
 
-	var _joinGame = function (gameId, playerId, nickname, callback) {
-		_getGame(gameId, function (err, game) {
-			
-			if(err)
-				return callback(err);
+    public createGame(id, initialCredits, callback) {
 
-			if(game.started) 
-				return callback(new Error('game already started'));
-			
+        var existingGame;
 
-			if(_getPlayer(game, playerId)) return callback(new Error('player already joined'));
+        this.getGame(id, (err, game) => {
 
-			for(var i = 0; i < game.players.length; i++) {
-				if(game.players[i].nickname === nickname) {
-					return callback(new Error('nickname is already taken'));
-				}
-			}
+            if (err)
+                return callback(err);
 
-			game.players.push({
-				id: playerId,
-				nickname: nickname,
-				credits: game.initialCredits
-			});
+            existingGame = game;
+        });
 
-			return callback(null);
-		});
-	};
+        if (existingGame) {
+            return callback(new Error('A game with that id already exists'));
+        }
 
-	var _startGame = function (id, callback) {
+        var game: Game = new Game();
+        game.id = id;
+        game.initialCredits = initialCredits;
+        game.players = new Player[],
+        game.started = false;
+        game.pot = 0;
 
-		_getGame(id, function (err, game) {
-			
-			if(err)
-				return callback(err);
 
-			if(game.players.length > 1 && !game.started) {
-				game.started = true;
-				return callback(null);
-			} else {
-				return callback(new Error('game cannot start because of current game state'));
-			}
-		});
-	}
+        this.games.push(game);
 
-	var _bet = function (gameId, playerId, amount, callback) {
-		_getGame(gameId, function (err, game) {
-			var player = _getPlayer(game, playerId);
+        callback(null, game);
+    };
 
-			if(err)
-				return callback(err);
+    public flushGames() {
+        this.games = new Game[];
+    }
 
-			if(player.credits < amount)
-				return callback(new Error('bet exceeds credits'));
+    public joinGame(gameId, playerId, nickname, callback) {
+        this.getGame(gameId, (err, game) => {
 
-			game.pot += amount;
-			player.credits -= amount;
-			
-			return callback(null);
-		}) 
-	}
+            if (err)
+                return callback(err);
 
-	return  {
-		createGame: _createGame,
-		joinGame: _joinGame,
-		startGame: _startGame,
-		getGame: _getGame,
-		flushGames: _flushGames,
-		bet: _bet
-	};
-}();
+            if (game.started)
+                return callback(new Error('game already started'));
 
-module.exports = Jetons;
+
+            if (this.getPlayer(game, playerId)) return callback(new Error('player already joined'));
+
+            for (var i = 0; i < game.players.length; i++) {
+                if (game.players[i].nickname === nickname) {
+                    return callback(new Error('nickname is already taken'));
+                }
+            }
+
+            game.players.push({
+                id: playerId,
+                nickname: nickname,
+                credits: game.initialCredits
+            });
+
+            return callback(null);
+        });
+    }
+
+    public startGame(id, callback) {
+        this.getGame(id, (err, game) => {
+
+            if (err)
+                return callback(err);
+
+            if (game.players.length > 1 && !game.started) {
+                game.started = true;
+                return callback(null);
+            } else {
+                return callback(new Error('game cannot start because of current game state'));
+            }
+        });
+    }
+
+    public bet(gameId, playerId, amount, callback) {
+        this.getGame(gameId, (err, game) => {
+            var player = this.getPlayer(game, playerId);
+
+            if (err)
+                return callback(err);
+
+            if (player.credits < amount)
+                return callback(new Error('bet exceeds credits'));
+
+            game.pot += amount;
+            player.credits -= amount;
+
+            return callback(null);
+        })
+    }
+}
