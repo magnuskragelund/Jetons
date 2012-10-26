@@ -23,6 +23,7 @@
     <Content Include="app.js">
       <DependentUpon>app.ts</DependentUpon>
     </Content>
+    <Content Include="test\tests.js" />
     <TypeScriptCompile Include="lib\jetons.ts" />
     <Content Include="lib\jetons.js" />
     <Content Include="node.d.ts" />
@@ -243,7 +244,7 @@
     <Content Include="node_modules\should\package.json" />
     <Content Include="node_modules\should\Readme.md" />
     <Content Include="test\mocha.opts" />
-    <Content Include="test\tests.js" />
+    <TypeScriptCompile Include="test\tests.ts" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

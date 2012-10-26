@@ -1,4 +1,3 @@
-///<reference path='../node.d.ts'/>
 
 class Game {
     id: number;
